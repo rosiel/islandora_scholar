@@ -51,7 +51,6 @@ function islandora_google_scholar_create_meta_tags($object) {
             if ((string) $name_part != '') {
               // Strip periods off the end.
               $np = (string) rtrim($name_part, '.');
-              echo $np;
               if ($name_part['type'] == 'given') {
                 $name_parts['first_name'] = (string) $name_part;
               }
@@ -124,6 +123,14 @@ function islandora_google_scholar_create_meta_tags($object) {
           (string) reset($issn));
     }
 
+    $isbn = $mods_xml->xpath('//mods:identifier[@type="isbn"]');
+    if ($isbn) {
+      $tags['citation_isbn'] = str_replace(
+          array("&", "=", ",", ";"),
+          array('', '', '', ''),
+          (string) reset($isbn));
+    }
+
     $issue = $mods_xml->xpath('//mods:part/mods:detail[@type="issue"]/mods:number');
     if ($issue) {
       $tags['citation_issue'] = (string) reset($issue);
@@ -152,8 +159,19 @@ function islandora_google_scholar_create_meta_tags($object) {
       $tags['citation_doi'] = (string) reset($doi);
     }
 
-    if ($object['PDF']) {
-      $tags['citation_pdf_url'] = url("islandora/object/$object->id/datastream/PDF/view", array('absolute' => TRUE));
+    $publisher = $mods_xml->xpath('//mods:originInfo/mods:publisher');
+    if ($publisher) {
+        $tags['DC.publisher'] = (string) reset($publisher);
+    }
+
+    if ($object['OBJ-EN']) {
+      $tags['citation_pdf_url'][] = url("islandora/object/$object->id/datastream/OBJ-EN/view", array('absolute' => TRUE));
+    }
+    if ($object['OBJ-ES']) {
+      $tags['citation_pdf_url'][] = url("islandora/object/$object->id/datastream/OBJ-ES/view", array('absolute' => TRUE));
+    }
+    if ($object['OBJ-FR']) {
+      $tags['citation_pdf_url'][] = url("islandora/object/$object->id/datastream/OBJ-FR/view", array('absolute' => TRUE));
     }
 
     $tags['citation_abstract_html_url'] = url("islandora/object/$object->id/", array('absolute' => TRUE));
