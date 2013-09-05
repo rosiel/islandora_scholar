@@ -17,14 +17,16 @@
  *   the content.
  */
 function islandora_google_scholar_create_meta_tags($object) {
-  // Need at least title, full name of at least one author, publication year.
-  if (!isset($object['MODS']) || !islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['MODS'])) {
+  // Need at least title, full name of at least one author which may be a corporate author, publication year.
+  module_load_include('inc', 'islandora_multilingual', 'includes/Multilingual');
+  $datastream = chooseLanguage($object, 'MODS-');
+  if (!$datastream || !islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object[$datastream])) {
     return FALSE;
   }
   else {
     $tags = array();
     $tags['citation_author'] = array();
-    $mods = $object['MODS']->content;
+    $mods = $object[$datastream]->content;
     $mods_xml = new SimpleXMLElement($mods);
     $mods_xml->registerXPathNamespace('mods', 'http://www.loc.gov/mods/v3');
 
@@ -44,22 +46,29 @@ function islandora_google_scholar_create_meta_tags($object) {
       $name_parts = array();
       $role = (string) @$name_xml->role->roleTerm;
       if ($role) {
-        if ($role == 'author') {
+        if ($role == 'Author' || $role == 'aut') {
           foreach ($name_xml->namePart as $name_part) {
             if ((string) $name_part != '') {
               // Strip periods off the end.
               $np = (string) rtrim($name_part, '.');
+              echo $np;
               if ($name_part['type'] == 'given') {
                 $name_parts['first_name'] = (string) $name_part;
               }
               if ($name_part['type'] == 'family') {
                 $name_parts['last_name'] = $np;
               }
+              if ($name_part['type'] == Null) {
+                $name_parts['direct'] = $np;
+              }
             }
           }
         }
         if (isset($name_parts['last_name']) && isset($name_parts['first_name'])) {
           $tags['citation_author'][] = $name_parts['last_name'] . ', ' . $name_parts['first_name'];
+        }
+        elseif (isset($name_parts['direct'])) {
+          $tags['citation_author'][] = $name_parts['direct'];
         }
       }
     }
@@ -191,7 +200,7 @@ function islandora_google_scholar_embed_tags($tags) {
 /**
  * Implements hook_CMODEL_islandora_view_object().
  */
-function islandora_google_scholar_ir_citationCModel_islandora_view_object($object) {
+function islandora_google_scholar_islandora_CEC_multilingual_islandora_view_object($object) {
   $tags = islandora_google_scholar_create_meta_tags($object);
   islandora_google_scholar_embed_tags($tags);
 }
