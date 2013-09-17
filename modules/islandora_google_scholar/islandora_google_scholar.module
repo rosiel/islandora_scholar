@@ -72,6 +72,37 @@ function islandora_google_scholar_create_meta_tags($object) {
       }
     }
     if (count($tags['citation_author']) == 0) {
+      // Check for contributors...
+        foreach ($mods_xml->name as $name_xml) {
+          $name_parts = array();
+          $role = (string) @$name_xml->role->roleTerm;
+          if ($role) {
+            if ($role == 'Contributor' || $role == 'ctb') {
+              foreach ($name_xml->namePart as $name_part) {
+                if ((string) $name_part != '') {
+                  $np = (string) rtrim($name_part, '.');
+                  if ($name_part['type'] == 'given') {
+                    $name_parts['first_name'] = (string) $name_part;
+                  }
+                  if ($name_part['type'] == 'family') {
+                    $name_parts['last_name'] = $np;
+                  }
+                  if ($name_part['type'] == Null) {
+                    $name_parts['direct'] = $np;
+                  }
+                }
+              }
+            }
+            if (isset($name_parts['last_name']) && isset($name_parts['first_name'])) {
+              $tags['citation_author'][] = $name_parts['last_name'] . ', ' . $name_parts['first_name'];
+            }
+            elseif (isset($name_parts['direct'])) {
+              $tags['citation_author'][] = $name_parts['direct'];
+            }
+          }
+        }
+    }
+    if (count($tags['citation_author']) == 0) {
       return FALSE;
     }
 
