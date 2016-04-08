@@ -355,7 +355,7 @@
                   <value>&lt;name type='personal'&gt;&lt;role&gt;&lt;roleTerm authority="marcrelator" type="text"&gt;author&lt;/roleTerm&gt;&lt;/role&gt;&lt;/name&gt;</value>
                 </create>
                 <read>
-                  <path>mods:name[@type = 'personal' and mods:role/mods:roleTerm = 'author']</path>
+                  <path>mods:name[@type = 'personal' and (mods:role/mods:roleTerm = 'author' or mods:role/mods:roleTerm = "Author")]</path>
                   <context>parent</context>
                 </read>
                 <update>
