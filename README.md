@@ -1,6 +1,5 @@
-# Islandora Scholar [![Build Status](https://travis-ci.org/Islandora/islandora_scholar.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_scholar)
 
-## Introduction
+## FOOOOO
 
 Based on the UPEI scholar module, Islandora Scholar is designed to implement a feature-rich Institutional Repository.
 
